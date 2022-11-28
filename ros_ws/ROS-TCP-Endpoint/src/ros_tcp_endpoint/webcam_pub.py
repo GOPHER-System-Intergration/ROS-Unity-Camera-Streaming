@@ -22,16 +22,19 @@ def publish_message():
   # Tells rospy the name of the node.
   # Anonymous = True makes sure the node has a unique name. Random
   # numbers are added to the end of the name.
-  rospy.init_node('video_pub_py', anonymous=True)
+  rospy.init_node('webcam_pub', anonymous=True)
      
   # Go through the loop 10 times per second
-  rate = rospy.Rate(10) # 10hz
-     
+  rate = rospy.Rate(rospy.get_param('/webcam_pub/fps')) # 10hz
+  
+
+  
   # Create a VideoCapture object
   # The argument '0' gets the default webcam.
-  cap = cv2.VideoCapture(2)
-  cap.set(cv2.CAP_PROP_FRAME_WIDTH,3840);
-  cap.set(cv2.CAP_PROP_FRAME_HEIGHT,1080);   
+  device_id = rospy.get_param('/webcam_pub/device_id')
+  cap = cv2.VideoCapture(device_id)
+  cap.set(cv2.CAP_PROP_FRAME_WIDTH,rospy.get_param('/webcam_pub/input_width'));
+  cap.set(cv2.CAP_PROP_FRAME_HEIGHT,rospy.get_param('/webcam_pub/input_height'));   
   # Used to convert between ROS and OpenCV images
   br = CvBridge()
  
@@ -49,7 +52,7 @@ def publish_message():
         msg = CompressedImage()
         msg.header.stamp = rospy.Time.now()
         msg.format = "jpeg"
-        encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 20]
+        encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), rospy.get_param('/webcam_pub/jpg_quality')]
 
         msg.data = np.array(cv2.imencode('.jpg', frame, encode_param)[1]).tostring()
         # Publish the image.
