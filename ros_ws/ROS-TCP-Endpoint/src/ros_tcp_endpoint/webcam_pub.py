@@ -48,7 +48,7 @@ def publish_message():
          
       if ret == True:
         # Print debugging information to the terminal
-        rospy.loginfo('publishing video frame')
+        #rospy.loginfo('publishing video frame')
         msg = CompressedImage()
         msg.header.stamp = rospy.Time.now()
         msg.format = "jpeg"

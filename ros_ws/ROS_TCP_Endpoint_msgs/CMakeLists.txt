@@ -11,7 +11,14 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(FILES
     Image.msg
     CompressedImage.msg
+    ConsoleInfo.msg
 )
+
+add_service_files(
+  FILES
+  UnityPrint.srv
+)
+
 
 generate_messages(
   DEPENDENCIES
