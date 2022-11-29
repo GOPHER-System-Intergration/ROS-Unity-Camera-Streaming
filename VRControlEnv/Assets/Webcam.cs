@@ -16,7 +16,9 @@ public class Webcam : MonoBehaviour {
     private bool needsBuffer;
 	void Start () {
         WebCamDevice[] devices = WebCamTexture.devices;
-        webcamTexture = new WebCamTexture(3840,1080);
+        webcamTexture = new WebCamTexture(3840, 1080);
+        webcamTexture.requestedWidth = inputWidth;
+        webcamTexture.requestedHeight = inputHeight;
         bufferTexture = new Texture2D(4096, 2048);
 
         //Only use buffer texture if resolutions dont match
@@ -24,20 +26,26 @@ public class Webcam : MonoBehaviour {
 
         //Place image in the center of the output texture
         if (needsBuffer) {
-            xOffset = (4096-inputWidth)/2;
-            yOffset = (2048-inputHeight)/2;
+            xOffset = (4096- webcamTexture.width) /2;
+            yOffset = (2048- webcamTexture.height) /2;
         }
         
         webcamTexture.deviceName = devices[deviceId].name;
-        
         webcamTexture.Play();
-        
+        Debug.Log(webcamTexture.width);
     }
 
     void Update() {
+        if (webcamTexture.width < 100)
+        {
+            Debug.Log("Waiting for webcam to spin up");
+            return;
+        }
         //Copy webcam texture to render texture output
         if (needsBuffer) {
-            Graphics.CopyTexture(webcamTexture, 0, 0, 0, 0, inputWidth, inputHeight, bufferTexture, 0, 0, xOffset, yOffset);
+            xOffset = (4096 - webcamTexture.width) / 2;
+            yOffset = (2048 - webcamTexture.height) / 2;
+            Graphics.CopyTexture(webcamTexture, 0, 0, 0, 0, webcamTexture.width, webcamTexture.height, bufferTexture, 0, 0, xOffset, yOffset);
             Graphics.Blit(bufferTexture, outputTexture);
         } else {
             Graphics.Blit(webcamTexture, outputTexture);
