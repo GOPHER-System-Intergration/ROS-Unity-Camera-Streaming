@@ -1,6 +1,9 @@
 using UnityEngine;
 using UnityEngine.UI;
 using Unity.Robotics.ROSTCPConnector;
+using System;
+using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR;
 //using RosImage = RosMessageTypes.ROSTCPEndpoint.ImageMsg;
 using RosConsoleMessage = RosMessageTypes.ROSTCPEndpoint.ConsoleInfoMsg;
 
@@ -15,12 +18,19 @@ public class ConsoleHandler : MonoBehaviour
     public Color errorColor;
     public Color warnColor;
     public Color infoColor;
+    
     Text[] console;
     string[] msgs;
     Vector3[] colors;
     int rollingInd = 0;
+
+    XRController xr;
+
+
     void Start()
     {
+        xr = GetComponent<XRController>();
+        
         ROSConnection.GetOrCreateInstance().Subscribe<RosConsoleMessage>("unity_console", MessageRecived);
         console = new Text[lines];
         msgs = new string[lines];
@@ -28,7 +38,7 @@ public class ConsoleHandler : MonoBehaviour
         console[0] = firstLine;
         for (int i = 1; i < lines; i++)
         {
-            console[i] = Object.Instantiate(firstLine) as Text;
+            console[i] = UnityEngine.Object.Instantiate(firstLine) as Text;
             console[i].transform.SetParent(canvas.transform);
             //console[i].rectTransform.position += new Vector3(0, firstLine.rectTransform.rect.height, 0);
             console[i].rectTransform.anchoredPosition = firstLine.rectTransform.anchoredPosition + new Vector2(0, i*firstLine.rectTransform.rect.height);
@@ -41,27 +51,26 @@ public class ConsoleHandler : MonoBehaviour
     void MessageRecived(RosConsoleMessage msg)
     {
         Debug.Log("[" + msg.code + "]: " + msg.content);
-        string cd;
+        DateTime d = DateTimeOffset.FromUnixTimeSeconds(msg.header.stamp.sec).DateTime;
+        string cd = d.ToString("HH:mm:ss");
         Vector3 clr;
         switch (msg.code)
         {
             case 0:
-                cd = "SUCSS";
                 clr = new Vector3(successColor.r, successColor.g, successColor.b);
                     break;
             case 1:
-                cd = "EROR";
+                xr.SendHapticImpulse(0.7f, 2f);
                 clr = new Vector3(errorColor.r, errorColor.g, errorColor.b);
                 break;
             case 2:
-                cd = "WARN";
                 clr = new Vector3(warnColor.r, warnColor.g, warnColor.b);
                 break;
             default:
-                cd = "INFO";
                 clr = new Vector3(infoColor.r, infoColor.g, infoColor.b);
                 break;
         }
+        
         string str = "[" + cd + "] " + msg.content;
         
         while (str.Length > 0)
