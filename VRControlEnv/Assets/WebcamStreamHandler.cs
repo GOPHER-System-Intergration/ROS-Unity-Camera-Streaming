@@ -56,6 +56,7 @@ public class WebcamStreamHandler : MonoBehaviour
                 yOffset = (2048 - tex.height) / 2;
                 Graphics.CopyTexture(tex, 0, 0, 0, 0, tex.width, tex.height, bufferTexture, 0, 0, xOffset, yOffset);
                 Graphics.Blit(bufferTexture, outputTexture);
+                //Graphics.CopyTexture(tex, 0, 0, 0, 0, tex.width, tex.height, bufferTexture, 0, 0, xOffset, yOffset);
             }
             
             
@@ -101,11 +102,11 @@ public class WebcamStreamHandler : MonoBehaviour
         Texture2D result = new Texture2D(width, height, TextureFormat.ARGB32, true);
         result.Reinitialize(width, height);
         result.ReadPixels(texR, 0, 0, true);
-        rtt.Release();
+
         return result;
     }
 
-
+    static RenderTexture rtt;
 
     /// <summary>
     /// Scales the texture data of the given texture.
@@ -116,15 +117,29 @@ public class WebcamStreamHandler : MonoBehaviour
     /// <param name="mode">Filtering mode</param>
     public static void scale(Texture2D tex, int width, int height, FilterMode mode = FilterMode.Trilinear)
     {
+        if (rtt is null)
+        {
+            rtt = new RenderTexture(width, height, 32);
+        } else
+        {
+            if (rtt.width == width && rtt.height == height)
+            {
+
+            }else
+            {
+                rtt.Release();
+                rtt = new RenderTexture(width, height, 32);
+            }
+        }
         Rect texR = new Rect(0, 0, width, height);
-        RenderTexture rtt = new RenderTexture(width, height, 32);
+        
         _gpu_scale(tex, rtt, width, height, mode);
 
         // Update new texture
         tex.Reinitialize(width, height);
         tex.ReadPixels(texR, 0, 0, true);
         tex.Apply(true);    //Remove this if you hate us applying textures for you :)
-        rtt.Release();
+  
     }
 
     // Internal unility that renders the source texture into the RTT - the scaling method itself.

@@ -6,6 +6,8 @@ using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR;
 //using RosImage = RosMessageTypes.ROSTCPEndpoint.ImageMsg;
 using RosConsoleMessage = RosMessageTypes.ROSTCPEndpoint.ConsoleInfoMsg;
+using static OVRInput;
+using UnityEditor;
 
 public class ConsoleHandler : MonoBehaviour
 {
@@ -14,6 +16,10 @@ public class ConsoleHandler : MonoBehaviour
     public int lines = 5;
     public int charPerLine = 16;
     public float fadeIntensity = 5;
+
+    public AudioSource audioSource;
+    public AudioClip clip;
+
     public Color successColor;
     public Color errorColor;
     public Color warnColor;
@@ -23,13 +29,12 @@ public class ConsoleHandler : MonoBehaviour
     string[] msgs;
     Vector3[] colors;
     int rollingInd = 0;
+    
 
-    XRController xr;
 
 
     void Start()
     {
-        xr = GetComponent<XRController>();
         
         ROSConnection.GetOrCreateInstance().Subscribe<RosConsoleMessage>("unity_console", MessageRecived);
         console = new Text[lines];
@@ -60,8 +65,10 @@ public class ConsoleHandler : MonoBehaviour
                 clr = new Vector3(successColor.r, successColor.g, successColor.b);
                     break;
             case 1:
-                xr.SendHapticImpulse(0.7f, 2f);
                 clr = new Vector3(errorColor.r, errorColor.g, errorColor.b);
+                //EditorApplication.Beep();
+                audioSource.PlayOneShot(clip, 1f);
+                OVRInput.SetControllerVibration(1, 1, OVRInput.Controller.RTouch);
                 break;
             case 2:
                 clr = new Vector3(warnColor.r, warnColor.g, warnColor.b);
