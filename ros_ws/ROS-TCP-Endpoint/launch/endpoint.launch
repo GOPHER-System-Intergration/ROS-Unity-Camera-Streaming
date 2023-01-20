@@ -2,6 +2,10 @@
     <arg name="tcp_ip" default="0.0.0.0"/>
     <arg name="tcp_port" default="10000"/>
 
+	<arg name="node_udp_webcam" default="0"/>
+	<arg name="udp_ip" default="192.168.1.104"/>
+	<arg name="udp_port" default="8080"/>
+	<arg name="chunk_size" default="4000"/>
     <arg name="node_webcam" default="1"/>
     <arg name="device_id" default="0" />
     <arg name="jpg_quality" default="50" />
@@ -22,6 +26,20 @@
 	<param name="input_height" type="int" value="$(arg input_height)" />
     </node>
     </group>
+
+    <group if="$(arg node_udp_webcam)">
+    <node name="udpwebcam_pub" pkg="ros_tcp_endpoint" type="udpwebcam_pub.py" output="screen">
+        <param name="udp_port" type="int" value="$(arg udp_port)" />
+	<param name="udp_ip" type="string" value="$(arg udp_ip)" />
+	<param name="chunk_size" type="int" value="$(arg chunk_size)" />
+	<param name="device_id" type="int" value="$(arg device_id)" />
+        <param name="jpg_quality" type="int" value="$(arg jpg_quality)" />
+        <param name="fps" type="int" value="$(arg fps)" />
+        <param name="input_width" type="int" value="$(arg input_width)" />
+        <param name="input_height" type="int" value="$(arg input_height)" />
+    </node>
+    </group>
+
 
     <node name="unity_console_server" pkg="ros_tcp_endpoint" type="unity_console.py" output="screen">
 
